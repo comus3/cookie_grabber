@@ -1,3 +1,27 @@
 {
-    "users": []
+  "users": [
+    {
+      "id": 1728299398608,
+      "time of visit": 1728299398,
+      "cookies": {}
+    },
+    {
+      "id": 1728299651443,
+      "time of visit": 1728299650,
+      "cookies": {},
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+      "screenResolution": {
+        "width": 1920,
+        "height": 1080
+      },
+      "location": {
+        "latitude": null,
+        "longitude": null
+      },
+      "ipAddress": "193.190.63.202",
+      "language": "en-BE",
+      "timezone": "Europe/Brussels",
+      "platform": "Linux x86_64"
+    }
+  ]
 }
