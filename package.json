@@ -17,5 +17,9 @@
     "url": "https://github.com/comus3/cookie_grabber/issues"
   },
   "homepage": "https://github.com/comus3/cookie_grabber#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "express": "^4.21.0"
+  }
 }
