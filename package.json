@@ -19,6 +19,7 @@
   "homepage": "https://github.com/comus3/cookie_grabber#readme",
   "description": "",
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^4.5.0",
     "body-parser": "^1.20.3",
     "express": "^4.21.0",
     "node-fetch": "^2.7.0",

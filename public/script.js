@@ -1,13 +1,21 @@
 window.addEventListener('load', async () => {
     console.log("User detected, gathering information...");
 
+    // Initialize FingerprintJS
+    const fp = await FingerprintJS.load();
+    const result = await fp.get();
+
+    // Get the fingerprint
+    const fingerprint = result.visitorId;
+
+    const fingerprintData = result.components;
+
     // Get cookies from the document
     const cookies = document.cookie.split('; ').map(cookie => cookie.split('='));
     const cookieObj = Object.fromEntries(cookies);
 
     const networkInfo = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     const connectionType = networkInfo ? networkInfo.effectiveType : 'unknown';
-
 
     // Get the current time of visit in seconds since epoch
     const timeOfVisit = Math.floor(Date.now() / 1000);
@@ -30,6 +38,8 @@ window.addEventListener('load', async () => {
         id: Date.now(), // Unique ID based on the current timestamp
         'time of visit': timeOfVisit,
         cookies: cookieObj,
+        fingerprint: fingerprint, // Include fingerprint
+        fingerprintData: fingerprintData,
         userAgent: userAgent,
         screenResolution: {
             width: screenWidth,
@@ -38,7 +48,7 @@ window.addEventListener('load', async () => {
         language: language,
         timezone: timezone,
         platform: navigator.platform,
-        networkInfo : networkInfo,
+        networkInfo: networkInfo,
         connectionType: connectionType
     };
 
