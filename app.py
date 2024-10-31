@@ -34,6 +34,11 @@ def write_database(data):
     with open(db_file_path, 'w') as f:
         json.dump(data, f, indent=4)
 
+@app.route('/')
+def index():
+    return send_from_directory('public', 'index.html')
+
+
 # Route pour traiter et sauvegarder les données des utilisateurs
 @app.route('/update-db', methods=['POST'])
 def update_db():
