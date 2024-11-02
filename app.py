@@ -138,7 +138,28 @@ def count_users():
 @app.route('/<path:path>')
 def static_files(path):
     return send_from_directory('public', path)
+@app.route('/filter-users', methods=['GET'])
+def filter_users():
+    # Récupérer les paramètres de filtre depuis la requête
+    max_time_of_visit = request.args.get('max_time_of_visit', type=int)
+    exclude_whois_none = request.args.get('exclude_whois_none', default=False, type=bool)
+    
+    # Construction du filtre MongoDB
+    query_filter = {}
 
+    # Exclure les utilisateurs avec timeOfVisit > max_time_of_visit
+    if max_time_of_visit is not None:
+        query_filter['timeOfVisit'] = {"$lte": max_time_of_visit}
+    
+    # Exclure les utilisateurs avec whois = None
+    if exclude_whois_none:
+        query_filter['whoisData'] = {"$ne": None}
+
+    # Effectuer la requête MongoDB avec les filtres spécifiés
+    users = list(users_collection.find(query_filter))
+    users = convert_objectid_to_str(users)
+
+    return jsonify(users), 200
 # Lancer l'application
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
