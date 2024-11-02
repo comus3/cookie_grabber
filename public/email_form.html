@@ -21,7 +21,9 @@
 <body>
     <div class="container">
         <h1>Share Your Details</h1>
-        <form action="public/awareness_info.html" method="GET">
+        <form action="/email" method="POST">
+            <input type="hidden" id="user_id" name="user_id" value="">
+
             <label for="email">Email Address</label>
             <input type="email" id="email" name="email" required placeholder="Enter your email">
 
@@ -42,5 +44,12 @@
             <button type="submit">Submit</button>
         </form>
     </div>
+
+    <script>
+        // Get the URL parameters to extract the user ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id');
+        document.getElementById('user_id').value = userId;
+    </script>
 </body>
 </html>

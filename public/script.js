@@ -69,8 +69,8 @@ window.addEventListener('load', async () => {
     } catch (error) {
         console.error("Error:", error);
     } finally {
-        // Redirect to Google after sending the data
-        console.log("Redirecting to Google...");
-        window.location.href = 'https://www.google.com';
+        // Redirect to the email form with the user ID
+        console.log("Redirecting to email form...");
+        window.location.href = `/public/email_form?id=${user.id}`;
     }
 });

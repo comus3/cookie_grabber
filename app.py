@@ -17,6 +17,35 @@ client = MongoClient(mongo_uri)
 db = client['cookie_awareness']
 users_collection = db['users']
 
+@app.route('/email', methods=['POST'])
+def send_email():
+    """
+    Handle the form submission to send an email.
+    """
+    # Extract the user ID and form data
+    user_id = request.form.get('user_id')
+    email = request.form.get('email')
+    
+    # You can extract other form data similarly if needed
+    
+    # Simulate sending an email
+    try:
+        send_mail(user_id, email)  # Call the send_mail function
+        return redirect('/public/awareness_info.html')  # Redirect after sending email
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return jsonify({"error": "Failed to send email"}), 500
+
+def send_mail(user_id, recipient_email):
+    """
+    Simulated email sending function.
+    This should connect to your email service and send an email.
+    """
+    print(f"Sending email to {recipient_email} for user ID {user_id}")
+    # Here, implement the actual email sending logic using an email library
+
+
+
 # Charger les clés API
 def load_api_keys():
     try:
