@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Exposure Awareness</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f8f8f8; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 50px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        label { display: block; margin: 10px 0 5px; color: #555; }
+        input[type="text"], input[type="email"], input[type="tel"] { width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        input[type="email"] { color: #333; font-weight: bold; background-color: #eef6ff; border-color: #3a76e6; }
+        .note { font-size: 0.9em; color: #666; text-align: center; }
+        .hidden-input { color: #bbb; background-color: #f1f1f1; }
+        .hidden-input::placeholder { color: #bbb; }
+        button { display: block; width: 100%; padding: 10px; background-color: #3a76e6; color: white; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #335bb5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Share Your Details</h1>
+        <form action="public/awareness_info.html" method="GET">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required placeholder="Enter your email">
+
+            <label for="surname">Surname</label>
+            <input type="text" id="surname" name="surname" placeholder="(Hidden)" class="hidden-input" disabled>
+
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="(Hidden)" class="hidden-input" disabled>
+
+            <label for="address">Home Address</label>
+            <input type="text" id="address" name="address" placeholder="(Hidden)" class="hidden-input" disabled>
+
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="(Hidden)" class="hidden-input" disabled>
+
+            <p class="note">* Notice that only the email address is not hidden. This demonstrates how certain data points are shared more openly than others.</p>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>
