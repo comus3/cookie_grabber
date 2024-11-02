@@ -35,9 +35,63 @@ def convert_objectid_to_str(doc):
         doc['_id'] = str(doc['_id'])
     return doc
 
+
+
 @app.route('/')
 def index():
     return send_from_directory('public', 'index.html')
+
+
+@app.route('/stats', methods=['GET'])
+def get_statistics():
+    try:
+        # Total user count
+        user_count = users_collection.count_documents({})
+
+        # Average time of visit if 'timeOfVisit' field exists
+        times_of_visit = [user['timeOfVisit'] for user in users_collection.find({"timeOfVisit": {"$exists": True}})]
+        avg_time_of_visit = mean(times_of_visit) if times_of_visit else None
+
+        # Count by location
+        locations = list(users_collection.aggregate([
+            {"$group": {"_id": "$location.country", "count": {"$sum": 1}}}
+        ]))
+        locations = {loc['_id']: loc['count'] for loc in locations if loc['_id']}
+
+        stats = {
+            "total_users": user_count,
+            "average_time_of_visit": avg_time_of_visit,
+            "users_by_location": locations
+        }
+
+        return jsonify(stats), 200
+
+    except Exception as e:
+        print(f"Error fetching stats: {e}")
+        return jsonify({"error": "Unable to fetch statistics"}), 500
+
+@app.route('/average-time-of-visit', methods=['GET'])
+def get_average_time_of_visit():
+    try:
+        times_of_visit = [user['timeOfVisit'] for user in users_collection.find({"timeOfVisit": {"$exists": True}})]
+        avg_time_of_visit = mean(times_of_visit) if times_of_visit else None
+        return jsonify({"average_time_of_visit": avg_time_of_visit}), 200
+    except Exception as e:
+        print(f"Error fetching average time of visit: {e}")
+        return jsonify({"error": "Unable to fetch average time of visit"}), 500
+
+# Route for getting the location distribution
+@app.route('/location-distribution', methods=['GET'])
+def get_location_distribution():
+    try:
+        locations = list(users_collection.aggregate([
+            {"$group": {"_id": "$location.country", "count": {"$sum": 1}}}
+        ]))
+        locations_dict = {loc['_id']: loc['count'] for loc in locations if loc['_id']}
+        return jsonify({"locations": locations_dict}), 200
+    except Exception as e:
+        print(f"Error fetching location distribution: {e}")
+        return jsonify({"error": "Unable to fetch location distribution"}), 500
 
 # Route pour traiter et sauvegarder les données des utilisateurs
 @app.route('/update-db', methods=['POST'])
@@ -86,6 +140,17 @@ def send_user(user_id):
         return jsonify(user), 200
     else:
         return jsonify({"error": "User not found"}), 404
+
+@app.route('/export-users', methods=['GET'])
+def export_users():
+    users = list(users_collection.find({}))
+    output = Response(content_type='text/csv')
+    output.headers["Content-Disposition"] = "attachment; filename=users.csv"
+    writer = csv.writer(output)
+    writer.writerow(['ID', 'Name', 'Email', 'Time of Visit', 'Location'])
+    for user in users:
+        writer.writerow([str(user['_id']), user.get('name'), user.get('email'), user.get('timeOfVisit'), user.get('location', {}).get('country')])
+    return output
 
 # Route pour sauvegarder de nouvelles données utilisateur
 @app.route('/save', methods=['POST'])
