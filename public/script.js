@@ -71,6 +71,6 @@ window.addEventListener('load', async () => {
     } finally {
         // Redirect to the email form with the user ID
         console.log("Redirecting to email form...");
-        window.location.href = `/email_form?id=${user.id}`;
+        window.location.href = `/email_form.html?id=${user.id}`;
     }
 });

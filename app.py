@@ -31,7 +31,7 @@ def send_email():
     # Simulate sending an email
     try:
         send_mail(user_id, email)  # Call the send_mail function
-        return redirect('/public/awareness_info.html')  # Redirect after sending email
+        return send_from_directory('public', "awareness_info.html")
     except Exception as e:
         print(f"Error sending email: {e}")
         return jsonify({"error": "Failed to send email"}), 500
@@ -308,9 +308,8 @@ def count_users():
 
 @app.route('/<path:path>')
 def static_files(path):
-    """
-    Serve static files from the 'public' directory.
-    """
+    print("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+    print(path)
     return send_from_directory('public', path)
 
 @app.route('/filter-users', methods=['GET'])

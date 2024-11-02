@@ -1,2 +1,5 @@
 WebVenv
 node_modules
+VENV/*
+
+VENV
