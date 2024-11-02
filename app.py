@@ -7,9 +7,23 @@ import os
 import requests
 import csv
 from statistics import mean
+from flask_caching import Cache
 
 app = Flask(__name__)
 CORS(app)
+
+# Configuration de l'application Flask
+app = Flask(__name__)
+CORS(app)
+
+# Configuration de la mise en cache avec Redis
+cache = Cache(app, config={
+    "CACHE_TYPE": "redis",
+    "CACHE_REDIS_HOST": "localhost",
+    "CACHE_REDIS_PORT": 6379,
+    "CACHE_REDIS_DB": 0,
+    "CACHE_DEFAULT_TIMEOUT": 300  # Durée de vie de 5 minutes pour le cache
+})
 
 # Configuration de la connexion à MongoDB
 mongo_uri = "mongodb://localhost:27017"
@@ -140,19 +154,26 @@ def get_location_distribution():
 
 @app.route('/update-db', methods=['POST'])
 def update_db():
-    """
-    Update the user database with new user data and IP location.
-    """
     user = request.json
     ip_address = request.remote_addr
 
-    ip_info = fetch_ip_info(ip_address)
+    # Utilisation de la fonction mise en cache pour obtenir les informations IP
+    ip_info = get_ip_info(ip_address)
+
     user.update({
         "ipAddress": ip_address,
-        "location": ip_info
+        "location": {
+            "city": ip_info.get("city"),
+            "region": ip_info.get("region"),
+            "country": ip_info.get("country"),
+            "postal": ip_info.get("postal"),
+            "org": ip_info.get("org"),
+            "location": ip_info.get("loc")
+        }
     })
 
-    whois_data = fetch_whois_data(ip_address)
+    # Utilisation de la fonction mise en cache pour obtenir les données Whois
+    whois_data = get_whois_data(ip_address)
     user["whoisData"] = whois_data
 
     # Sauvegarder l'utilisateur dans la base de données MongoDB
@@ -337,6 +358,30 @@ def filter_users():
     users = convert_objectid_to_str(users)
 
     return jsonify(users), 200
+
+
+@cache.memoize(timeout=300)
+def get_ip_info(ip_address):
+    """Récupère les informations IP en utilisant ipinfo.io et met en cache les résultats."""
+    ip_info_url = f'https://ipinfo.io/{ip_address}/json?token={api_key}'
+    response = requests.get(ip_info_url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Erreur lors de l'obtention des informations IP.")
+        return None
+    
+
+@cache.memoize(timeout=300)
+def get_whois_data(ip_address):
+    """Récupère les données Whois et met en cache les résultats."""
+    whois_url = f'https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey={who_is_api_key}&domainName={ip_address}&outputFormat=JSON'
+    response = requests.get(whois_url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Erreur lors de l'obtention des données Whois.")
+        return None    
 
 # Lancer l'application
 if __name__ == '__main__':
