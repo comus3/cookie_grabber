@@ -8,6 +8,8 @@ import requests
 import csv
 from statistics import mean
 from flask_caching import Cache
+from flask_mail import Mail, Message
+
 
 app = Flask(__name__)
 CORS(app)
@@ -110,6 +112,13 @@ def index():
     """
     return send_from_directory('public', 'index.html')
 
+@app.route('/admin')
+def admin_panel():
+    """
+    Serve the Admin Panel HTML page.
+    """
+    return send_from_directory('public', 'admin_panel.html')
+
 @app.route('/stats', methods=['GET'])
 def get_statistics():
     """
@@ -180,15 +189,20 @@ def update_db():
     # Utilisation de la fonction mise en cache pour obtenir les informations IP
     ip_info = get_ip_info(ip_address)
 
+    if not ip_info:  # Check if ip_info is None or empty
+        # Log or handle the case where IP info is not available
+        print("IP information could not be retrieved.")
+        ip_info = {}  # Default to an empty dict
+
     user.update({
         "ipAddress": ip_address,
         "location": {
-            "city": ip_info.get("city"),
-            "region": ip_info.get("region"),
-            "country": ip_info.get("country"),
-            "postal": ip_info.get("postal"),
-            "org": ip_info.get("org"),
-            "location": ip_info.get("loc")
+            "city": ip_info.get("city", ""),
+            "region": ip_info.get("region", ""),
+            "country": ip_info.get("country", ""),
+            "postal": ip_info.get("postal", ""),
+            "org": ip_info.get("org", ""),
+            "location": ip_info.get("loc", "")
         }
     })
 
@@ -201,6 +215,7 @@ def update_db():
     user = convert_objectid_to_str(user)
 
     return jsonify({"status": "success", "user_data": user}), 201
+
 
 def fetch_ip_info(ip_address):
     """

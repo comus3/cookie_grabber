@@ -1,0 +1,49 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f4f4f4;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+#controls {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+#userList, #statistics {
+    width: 90%;
+    max-width: 600px;
+    margin: 10px 0;
+}
+
+.user {
+    background: #fff;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.user p {
+    margin: 5px 0;
+    color: #555;
+}
+
+button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ddd;
+}
