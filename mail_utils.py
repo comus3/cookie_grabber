@@ -1,37 +1,29 @@
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from config import EMAIL_HOST, EMAIL_PORT, EMAIL_USE_TLS, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
 
-from flask import Flask
-from flask_mail import Mail, Message
-from config import EMAIL_ADDRESS, EMAIL_PASSWORD
+def send_email(to_email, subject, body_html, body_text=None):
+
+    msg = MIMEMultipart("alternative")
+    msg["From"] = EMAIL_HOST_USER
+    msg["To"] = to_email
+    msg["Subject"] = subject
 
 
+    if body_text:
+        part1 = MIMEText(body_text, "plain")
+        msg.attach(part1)
+    part2 = MIMEText(body_html, "html")
+    msg.attach(part2)
 
-
-
-
-app = Flask(__name__)
-
-
-app.config['MAIL_SERVER'] = 'smtp.office365.com'  # Pour Microsoft 
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = EMAIL_ADDRESS 
-app.config['MAIL_PASSWORD'] = EMAIL_PASSWORD  
-
-mail = Mail(app)
-
-@app.route('/send-email')
-def send_email():
     try:
-        msg = Message(
-            subject="Hello from Flask-Mail",
-            sender=app.config['MAIL_USERNAME'],
-            recipients=['....'],  # adresse de destination
-            body="Hello There"
-        )
-        mail.send(msg)
-        return "Email envoyé avec succès !"
-    except Exception as e:
-        return f"Erreur lors de l'envoi de l'email : {e}"
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+            if EMAIL_USE_TLS:
+                server.starttls()  
+            server.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)  
 
-if __name__ == "__main__":
-    app.run(debug=True)
+            server.sendmail(EMAIL_HOST_USER, to_email, msg.as_string())
+            print(f"Email envoyé avec succès à {to_email}")
+    except Exception as e:
+        print(f"Erreur lors de l'envoi de l'email: {e}")
