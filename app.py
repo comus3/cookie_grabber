@@ -26,24 +26,19 @@ app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
 
 
+mail = Mail(app)
+
 @app.route('/email', methods=['POST'])
 def send_email():
     """
     Handle the form submission to send an email.
     """
-    # Extract the user ID and form data
     user_id = request.form.get('user_id')
     email = request.form.get('email')
-    
-    # You can extract other form data similarly if needed
-    
-    # Simulate sending an email
-    try:
-        send_mail(user_id, email)  # Call the send_mail function
-        return send_from_directory('public', "awareness_info.html")
-    except Exception as e:
-        print(f"Error sending email: {e}")
-        return jsonify({"error": "Failed to send email"}), 500
+        
+    send_mail(user_id, email)  
+    return send_from_directory('public', "awareness_info.html")
+
 
 def send_mail(user_id, recipient_email):
     """
