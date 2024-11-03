@@ -8,6 +8,7 @@ import requests
 import csv
 from statistics import mean
 from flask_caching import Cache
+from datetime import datetime  # Ajoutez cette ligne
 
 app = Flask(__name__)
 CORS(app)
@@ -30,6 +31,7 @@ mongo_uri = "mongodb://localhost:27017"
 client = MongoClient(mongo_uri)
 db = client['cookie_awareness']
 users_collection = db['users']
+email_history_collection = db['email_history']  
 
 # Configuration de Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
@@ -76,9 +78,19 @@ def send_mail(user_id, recipient_email):
         )
         mail.send(msg)
         print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
+        
+        # Log the email sent in the email history collection
+        email_history_collection.insert_one({
+            "user_id": user_id,
+            "recipient_email": recipient_email,
+            "sent_at": datetime.now(),
+            "subject": msg.subject,
+            "body": msg.body,
+        })
     except Exception as e:
         print(f"Failed to send email: {e}")
         raise e
+
 
 # Charger les clés API
 def load_api_keys():
@@ -270,6 +282,18 @@ def export_users():
         writer.writerow([str(user['_id']), user.get('name'), user.get('email'), user.get('timeOfVisit'), user.get('location', {}).get('country')])
     
     return output
+@app.route('/email-history', methods=['GET'])
+def get_email_history():
+    """
+    Retrieve the history of sent emails.
+    """
+    try:
+        email_history = list(email_history_collection.find({}))
+        email_history = convert_objectid_to_str(email_history)  # Convertir ObjectId en chaîne pour la sérialisation JSON
+        return jsonify(email_history), 200
+    except Exception as e:
+        print(f"Error fetching email history: {e}")
+        return jsonify({"error": "Unable to fetch email history"}), 500
 
 @app.route('/save', methods=['POST'])
 def save_user():
