@@ -54,14 +54,17 @@ def send_mail(user_id, recipient_email):
     Simulated email sending function.
     This should connect to your email service and send an email.
     """
-    msg = Message(
-            subject=" Information",
+    try:
+        msg = Message(
+            subject="Your Requested Information",
             recipients=[recipient_email],
             body=f"Hello,\n\nThis is a message containing details for user ID: {user_id}.\n\nThank you!",
         )
-    mail.send(msg)
-    print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
-
+        mail.send(msg)
+        print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+        raise e
 
 # Charger les clés API
 def load_api_keys():
