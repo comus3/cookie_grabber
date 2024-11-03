@@ -48,14 +48,19 @@ def send_email():
         return jsonify({"error": "Failed to send email"}), 500
 
 
+
 def send_mail(user_id, recipient_email):
     """
     Simulated email sending function.
     This should connect to your email service and send an email.
     """
-    print(f"Sending email to {recipient_email} for user ID {user_id}")
-    # Here, implement the actual email sending logic using an email library
-
+    msg = Message(
+            subject=" Information",
+            recipients=[recipient_email],
+            body=f"Hello,\n\nThis is a message containing details for user ID: {user_id}.\n\nThank you!",
+        )
+    mail.send(msg)
+    print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
 
 
 # Charger les clés API
