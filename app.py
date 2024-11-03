@@ -17,6 +17,15 @@ client = MongoClient(mongo_uri)
 db = client['cookie_awareness']
 users_collection = db['users']
 
+# Configuration de Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
+app.config['MAIL_PORT'] = 587  
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('...')  #  email username
+app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password 
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
+
+
 @app.route('/email', methods=['POST'])
 def send_email():
     """
