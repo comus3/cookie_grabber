@@ -17,6 +17,17 @@ client = MongoClient(mongo_uri)
 db = client['cookie_awareness']
 users_collection = db['users']
 
+# Configuration de Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
+app.config['MAIL_PORT'] = 587  
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('...')  #  email username
+app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password 
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
+
+
+mail = Mail(app)
+
 @app.route('/email', methods=['POST'])
 def send_email():
     """
@@ -26,25 +37,34 @@ def send_email():
     user_id = request.form.get('user_id')
     email = request.form.get('email')
     
-    # You can extract other form data similarly if needed
-    
-    # Simulate sending an email
+    if not user_id or not email:
+        return jsonify({"error": "User ID and email are required"}), 400
+
     try:
-        send_mail(user_id, email)  # Call the send_mail function
+        send_mail(user_id, email)  
         return send_from_directory('public', "awareness_info.html")
     except Exception as e:
         print(f"Error sending email: {e}")
         return jsonify({"error": "Failed to send email"}), 500
+
+
 
 def send_mail(user_id, recipient_email):
     """
     Simulated email sending function.
     This should connect to your email service and send an email.
     """
-    print(f"Sending email to {recipient_email} for user ID {user_id}")
-    # Here, implement the actual email sending logic using an email library
-
-
+    try:
+        msg = Message(
+            subject="Your Requested Information",
+            recipients=[recipient_email],
+            body=f"Hello,\n\nThis is a message containing details for user ID: {user_id}.\n\nThank you!",
+        )
+        mail.send(msg)
+        print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+        raise e
 
 # Charger les clés API
 def load_api_keys():
