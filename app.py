@@ -7,9 +7,15 @@ import os
 import requests
 import csv
 from statistics import mean
+from flask_caching import Cache
+from datetime import datetime
+from flask_mail import Mail, Message
+import config  
 
 app = Flask(__name__)
 CORS(app)
+
+app.config.from_object(config)
 
 # Configuration de la connexion à MongoDB
 mongo_uri = "mongodb://localhost:27017"
@@ -17,13 +23,31 @@ client = MongoClient(mongo_uri)
 db = client['cookie_awareness']
 users_collection = db['users']
 
+
+# Charger les clés API
+def load_api_keys():
+    try:
+        with open(os.path.join('ressources', 'api.json'), 'r') as f:
+            api_data = json.load(f)
+            return api_data['apiKey'], api_data['WhoIs'], api_data['apiGmail']
+    except Exception as e:
+        print(f"Erreur de chargement de la clé API : {e}")
+        return None, None, None
+
+api_key, who_is_api_key, api_key_gmail = load_api_keys()
+
+
+
+
 # Configuration de Flask-Mail
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
-app.config['MAIL_PORT'] = 587  
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('...')  #  email username
-app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password 
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
+app.config['MAIL_USERNAME'] = 'cookiegrabbel@gmail.com' 
+app.config['MAIL_PASSWORD'] = api_key_gmail  #
+app.config['MAIL_DEFAULT_SENDER'] = 'cookiegrabbel@gmail.com' 
+
+
 
 
 mail = Mail(app)
@@ -41,7 +65,7 @@ def send_email():
         return jsonify({"error": "User ID and email are required"}), 400
 
     try:
-        send_mail(user_id, email)  
+        send_mail(user_id, email)
         return send_from_directory('public', "awareness_info.html")
     except Exception as e:
         print(f"Error sending email: {e}")
@@ -66,17 +90,20 @@ def send_mail(user_id, recipient_email):
         print(f"Failed to send email: {e}")
         raise e
 
-# Charger les clés API
-def load_api_keys():
-    try:
-        with open(os.path.join('ressources', 'api.json'), 'r') as f:
-            api_data = json.load(f)
-            return api_data['apiKey'], api_data['whoIs']
-    except Exception as e:
-        print(f"Erreur de chargement de la clé API : {e}")
-        return None, None
 
-api_key, who_is_api_key = load_api_keys()
+
+
+# # Charger les clés API
+# def load_api_keys():
+#     try:
+#         with open(os.path.join('ressources', 'api.json'), 'r') as f:
+#             api_data = json.load(f)
+#             return api_data['apiKey'], api_data['whoIs']
+#     except Exception as e:
+#         print(f"Erreur de chargement de la clé API : {e}")
+#         return None, None
+
+# api_key, who_is_api_key = load_api_keys()
 
 # Fonction utilitaire pour convertir ObjectId en chaîne de caractères
 def convert_objectid_to_str(doc):
