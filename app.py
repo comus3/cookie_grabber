@@ -9,6 +9,7 @@ import csv
 from statistics import mean
 from flask_caching import Cache
 from datetime import datetime  # Ajoutez cette ligne
+from flask_mail import Mail, Message  
 
 app = Flask(__name__)
 CORS(app)
