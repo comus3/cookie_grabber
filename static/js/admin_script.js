@@ -104,3 +104,22 @@ function displayStatistics(stats) {
         <p><strong>Users by Location:</strong> ${JSON.stringify(stats.users_by_location)}</p>
     `;
 }
+
+async function editUser(userId) {
+    const newEmail = prompt('Enter new email');
+    if (!newEmail) return;
+
+    try {
+        await fetch(`/edit/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: newEmail })
+        });
+        alert('User updated');
+        loadUsers();
+    } catch (error) {
+        console.error("Error updating user:", error);
+    }
+}

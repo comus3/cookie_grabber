@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, Response
+from flask import Flask, render_template, redirect, url_for, request, jsonify, send_from_directory, Response, flash
 from flask_cors import CORS
 from pymongo import MongoClient
 from bson import ObjectId
@@ -9,13 +9,17 @@ import csv
 from statistics import mean
 from flask_caching import Cache
 from flask_mail import Mail, Message
-# Initialiser l'authentification
-from auth import init_auth
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from ressources.user import User
+from werkzeug.security import check_password_hash
 
 # Configuration de l'application Flask
 app = Flask(__name__)
+app.secret_key = 'password'  # Clé secrète pour les sessions
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'  # Redirige vers cette vue en cas de tentative d'accès non autorisé
 CORS(app)
-init_auth(app)
 # Configuration de la mise en cache avec Redis
 cache = Cache(app, config={
     "CACHE_TYPE": "redis",
@@ -110,6 +114,39 @@ def index():
     """
     return send_from_directory('public', 'index.html')
 
+@app.route('/admin')
+@login_required
+def admin():
+
+    """
+    Serve the admin panel for authenticated users.
+    """
+    return render_template('admin_panel.html', user=current_user)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.validate_login(username, password)
+        if user:
+            print(user.is_active())
+            login_user(user)
+            print("Vous êtes connecté !success")
+            return redirect(url_for('admin'))
+        else:
+            print("Échec de la validation")  # Debug
+            flash("Nom d'utilisateur ou mot de passe incorrect.", "error")
+    return render_template('login.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("Vous êtes déconnecté.", "success")
+    return redirect(url_for('login'))
 
 @app.route('/stats', methods=['GET'])
 def get_statistics():
@@ -239,6 +276,14 @@ def fetch_whois_data(ip_address):
     except Exception as e:
         print(f"Error fetching WHOIS data: {e}")
         return {}
+    
+@login_manager.user_loader
+def load_user(user_id):
+    user_data = db.admins.find_one({"_id": ObjectId(user_id)})
+    print(user_id)
+    if user_data:
+        return User(user_data['username'])
+    return None
 
 @app.route('/load', methods=['GET'])
 def load_users():

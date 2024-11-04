@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <title>Admin Panel</title>
-    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>Admin Panel</h1>
+    <h2>Bienvenue sur la page d'administration, {{ user.username }} !</h2>
+    <a href="{{ url_for('logout') }}">Se déconnecter</a>
 
     <!-- Section: Filter and Sort -->
     <div id="controls">
@@ -38,6 +40,6 @@
     <h2>Statistics</h2>
     <div id="statistics"></div>
 
-    <script src="admin_script.js"></script>
+    <script src="{{ url_for('static', filename='js/admin_script.js') }}"></script>
 </body>
 </html>
