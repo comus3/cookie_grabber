@@ -9,15 +9,13 @@ import csv
 from statistics import mean
 from flask_caching import Cache
 from flask_mail import Mail, Message
-
-
-app = Flask(__name__)
-CORS(app)
+# Initialiser l'authentification
+from auth import init_auth
 
 # Configuration de l'application Flask
 app = Flask(__name__)
 CORS(app)
-
+init_auth(app)
 # Configuration de la mise en cache avec Redis
 cache = Cache(app, config={
     "CACHE_TYPE": "redis",
@@ -112,12 +110,6 @@ def index():
     """
     return send_from_directory('public', 'index.html')
 
-@app.route('/admin')
-def admin_panel():
-    """
-    Serve the Admin Panel HTML page.
-    """
-    return send_from_directory('public', 'admin_panel.html')
 
 @app.route('/stats', methods=['GET'])
 def get_statistics():
