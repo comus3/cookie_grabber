@@ -382,8 +382,8 @@ def count_users():
 
 @app.route('/<path:path>')
 def static_files(path):
-    print("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
-    print(path)
+    #print("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+    #print(path)
     return send_from_directory('public', path)
 
 @app.route('/filter-users', methods=['GET'])
