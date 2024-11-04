@@ -98,7 +98,7 @@ def load_api_keys():
     try:
         with open(os.path.join('ressources', 'api.json'), 'r') as f:
             api_data = json.load(f)
-            return api_data['apiKey'], api_data['whoIs']
+            return api_data['apiKey'], api_data['WhoIs']
     except Exception as e:
         print(f"Erreur de chargement de la clé API : {e}")
         return None, None
