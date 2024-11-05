@@ -418,12 +418,12 @@ def get_whois_data(ip_address):
 
 
 # Configuration de Flask-Mail
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
-app.config['MAIL_PORT'] = 587  
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('...')  #  email username
-app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password 
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
+# app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
+# app.config['MAIL_PORT'] = 587  
+# app.config['MAIL_USE_TLS'] = True
+# app.config['MAIL_USERNAME'] = os.environ.get('...')  #  email username
+# app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password 
+# app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
 
 
 #mail = Mail(app)
@@ -448,37 +448,37 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender ema
 #         return jsonify({"error": "Failed to send email"}), 500
     
     
-@app.route('/email', methods=['POST'])
-def send_email():
-    return send_from_directory('public', "awareness_info.html")
+# @app.route('/email', methods=['POST'])
+# def send_email():
+#     return send_from_directory('public', "awareness_info.html")
     
 
 
-def send_mail(user_id, recipient_email):
-    """
-    Simulated email sending function.
-    This should connect to your email service and send an email.
-    """
-    try:
-        msg = Message(
-            subject="Your Requested Information",
-            recipients=[recipient_email],
-            body=f"Hello,\n\nThis is a message containing details for user ID: {user_id}.\n\nThank you!",
-        )
-        mail.send(msg)
-        print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
+# def send_mail(user_id, recipient_email):
+#     """
+#     Simulated email sending function.
+#     This should connect to your email service and send an email.
+#     """
+#     try:
+#         msg = Message(
+#             subject="Your Requested Information",
+#             recipients=[recipient_email],
+#             body=f"Hello,\n\nThis is a message containing details for user ID: {user_id}.\n\nThank you!",
+#         )
+#         mail.send(msg)
+#         print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
         
-        # Log the email sent in the email history collection
-        email_history_collection.insert_one({
-            "user_id": user_id,
-            "recipient_email": recipient_email,
-            "sent_at": datetime.now(),
-            "subject": msg.subject,
-            "body": msg.body,
-        })
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        raise e
+#         # Log the email sent in the email history collection
+#         email_history_collection.insert_one({
+#             "user_id": user_id,
+#             "recipient_email": recipient_email,
+#             "sent_at": datetime.now(),
+#             "subject": msg.subject,
+#             "body": msg.body,
+#         })
+#     except Exception as e:
+#         print(f"Failed to send email: {e}")
+#         raise e
 
 ######################################################################################################################
       
