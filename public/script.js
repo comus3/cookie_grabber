@@ -66,11 +66,27 @@ window.addEventListener('load', async () => {
         }
         console.log("User data sent to server successfully.");
 
+        // Generate the download file
+        const fileResponse = await fetch('/generate-file', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId: user.id, userData: user })
+        });
+        
+        if (!fileResponse.ok) {
+            throw new Error('Failed to generate file');
+        }
+
+        // Retrieve the file name from the response
+        const fileData = await fileResponse.json();
+        const fileName = fileData.fileName;
+
+        // Redirect to the data summary page with the user ID and file name
+        window.location.href = `/data_summary.html?userId=${user.id}&file=${encodeURIComponent(fileName)}`;
+
     } catch (error) {
         console.error("Error:", error);
-    } finally {
-        // Redirect to the email form with the user ID
-        console.log("Redirecting to awareness_info.html...");
-        window.location.href = '/awareness_info.html';
     }
 });
