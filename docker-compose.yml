@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  flask_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - MAIL_USERNAME=${MAIL_USERNAME}  # Utilisez des variables d'environnement
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - CACHE_REDIS_HOST=redis  # Nom du service Redis dans docker-compose
+      - CACHE_REDIS_PORT=6379
+      - MONGO_URI=mongodb://mongo:27017
+    depends_on:
+      - mongo
+      - redis
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  mongo_data:

@@ -18,17 +18,15 @@ CORS(app)
 app = Flask(__name__)
 CORS(app)
 
-# Configuration de la mise en cache avec Redis
+# Configuration du cache Redis
 cache = Cache(app, config={
     "CACHE_TYPE": "redis",
-    "CACHE_REDIS_HOST": "localhost",
-    "CACHE_REDIS_PORT": 6379,
-    "CACHE_REDIS_DB": 0,
-    "CACHE_DEFAULT_TIMEOUT": 300  # Durée de vie de 5 minutes pour le cache
+    "CACHE_REDIS_HOST": os.getenv("CACHE_REDIS_HOST", "localhost"),
+    "CACHE_REDIS_PORT": int(os.getenv("CACHE_REDIS_PORT", 6379)),
 })
 
-# Configuration de la connexion à MongoDB
-mongo_uri = "mongodb://localhost:27017"
+# Configuration MongoDB
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 client = MongoClient(mongo_uri)
 db = client['cookie_awareness']
 users_collection = db['users']
@@ -58,7 +56,7 @@ def send_email():
         return jsonify({"error": "User ID and email are required"}), 400
 
     try:
-        send_mail(user_id, email)  
+       # send_mail(user_id, email)  
         return send_from_directory('public', "awareness_info.html")
     except Exception as e:
         print(f"Error sending email: {e}")
