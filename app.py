@@ -12,6 +12,11 @@ from flask_mail import Mail, Message
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from ressources.user import User
 from werkzeug.security import check_password_hash
+from datetime import datetime  # Ajoutez cette ligne
+from flask_mail import Mail, Message  
+
+app = Flask(__name__)
+CORS(app)
 
 # Configuration de l'application Flask
 app = Flask(__name__)
@@ -20,20 +25,18 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # Redirige vers cette vue en cas de tentative d'accès non autorisé
 CORS(app)
-# Configuration de la mise en cache avec Redis
 cache = Cache(app, config={
     "CACHE_TYPE": "redis",
-    "CACHE_REDIS_HOST": "localhost",
-    "CACHE_REDIS_PORT": 6379,
-    "CACHE_REDIS_DB": 0,
-    "CACHE_DEFAULT_TIMEOUT": 300  # Durée de vie de 5 minutes pour le cache
+    "CACHE_REDIS_HOST": os.getenv("CACHE_REDIS_HOST", "localhost"),
+    "CACHE_REDIS_PORT": int(os.getenv("CACHE_REDIS_PORT", 6379)),
 })
 
-# Configuration de la connexion à MongoDB
-mongo_uri = "mongodb://localhost:27017"
+# Configuration MongoDB
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 client = MongoClient(mongo_uri)
 db = client['cookie_awareness']
 users_collection = db['users']
+email_history_collection = db['email_history']  
 
 # Configuration de Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
@@ -59,7 +62,7 @@ def send_email():
         return jsonify({"error": "User ID and email are required"}), 400
 
     try:
-        send_mail(user_id, email)  
+       # send_mail(user_id, email)  
         return send_from_directory('public', "awareness_info.html")
     except Exception as e:
         print(f"Error sending email: {e}")
@@ -80,16 +83,26 @@ def send_mail(user_id, recipient_email):
         )
         mail.send(msg)
         print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
+        
+        # Log the email sent in the email history collection
+        email_history_collection.insert_one({
+            "user_id": user_id,
+            "recipient_email": recipient_email,
+            "sent_at": datetime.now(),
+            "subject": msg.subject,
+            "body": msg.body,
+        })
     except Exception as e:
         print(f"Failed to send email: {e}")
         raise e
+
 
 # Charger les clés API
 def load_api_keys():
     try:
         with open(os.path.join('ressources', 'api.json'), 'r') as f:
             api_data = json.load(f)
-            return api_data['apiKey'], api_data['whoIs']
+            return api_data['apiKey'], api_data['WhoIs']
     except Exception as e:
         print(f"Erreur de chargement de la clé API : {e}")
         return None, None
@@ -322,6 +335,18 @@ def export_users():
         writer.writerow([str(user['_id']), user.get('name'), user.get('email'), user.get('timeOfVisit'), user.get('location', {}).get('country')])
     
     return output
+@app.route('/email-history', methods=['GET'])
+def get_email_history():
+    """
+    Retrieve the history of sent emails.
+    """
+    try:
+        email_history = list(email_history_collection.find({}))
+        email_history = convert_objectid_to_str(email_history)  # Convertir ObjectId en chaîne pour la sérialisation JSON
+        return jsonify(email_history), 200
+    except Exception as e:
+        print(f"Error fetching email history: {e}")
+        return jsonify({"error": "Unable to fetch email history"}), 500
 
 @app.route('/save', methods=['POST'])
 def save_user():
@@ -343,6 +368,14 @@ def delete_user(user_id):
         return jsonify({"status": "success", "message": "User deleted"}), 200
     else:
         return jsonify({"error": "User not found"}), 404
+    
+@app.route('/delete-all', methods=['DELETE'])
+def delete_all_users():
+    """
+    Delete all users from the database.
+    """
+    users_collection.delete_many({})
+    return jsonify({"status": "success", "message": "All users deleted"}), 200
 
 @app.route('/update/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
@@ -401,8 +434,8 @@ def count_users():
 
 @app.route('/<path:path>')
 def static_files(path):
-    print("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
-    print(path)
+    #print("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+    #print(path)
     return send_from_directory('public', path)
 
 @app.route('/filter-users', methods=['GET'])
@@ -456,4 +489,4 @@ def get_whois_data(ip_address):
 
 # Lancer l'application
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=80, debug=True)

@@ -70,7 +70,7 @@ window.addEventListener('load', async () => {
         console.error("Error:", error);
     } finally {
         // Redirect to the email form with the user ID
-        console.log("Redirecting to email form...");
-        window.location.href = `/email_form.html?id=${user.id}`;
+        console.log("Redirecting to awareness_info.html...");
+        window.location.href = '/awareness_info.html';
     }
 });
