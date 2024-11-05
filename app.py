@@ -273,8 +273,7 @@ def delete_all_users():
 
 @app.route('/generate-file', methods=['POST'])
 def generate_file():
-    ip_address = request.remote_addr
-    # Get the user data from the request
+    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)    # Get the user data from the request
     data = request.json
     user_id = data.get('userId')
     user_data = data.get('userData')
@@ -282,6 +281,7 @@ def generate_file():
     user_data['ipAddress'] = ip_address
     user_data['WhoIs_Data'] = get_whois_data(user_data.ipAddress)
     user_data['ip_info'] = get_ip_info(user_data.ipAddress)
+    
 
     # Define a filename based on the user ID
     file_name = f"user_data_report_{user_id}.json"
