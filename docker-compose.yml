@@ -29,5 +29,15 @@ services:
     ports:
       - "6379:6379"
 
+  ngrok:
+    image: wernight/ngrok
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}  # Optional: Set your ngrok authtoken
+      - NGROK_PORT=flask_app:80  # Forward to the Flask app
+    ports:
+      - "4040:4040"  # Optional: Expose the ngrok web interface
+    depends_on:
+      - flask_app  # Ensure ngrok starts after the Flask app
+
 volumes:
   mongo_data:
