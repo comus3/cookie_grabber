@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Summary</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Optional: Link to your CSS -->
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Data Awareness Website</h1>
+        <p>Here you can see how much data you share online each time you connect to a website.</p>
+
+        <div id="download-link" style="display: none;">
+            <p>Click the link below to download your data report:</p>
+            <a id="file-link" href="" download>Download Report</a>
+        </div>
+
+        <button id="redirect-button" style="display: none;">Go to Awareness Info</button>
+    </div>
+
+    <script>
+        // Get the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const fileName = urlParams.get('file');
+
+        // Display the download link if the file name exists
+        if (fileName) {
+            const fileLink = document.getElementById('file-link');
+            fileLink.href = `/exports/${fileName}`; // Adjust the path according to your server setup
+            document.getElementById('download-link').style.display = 'block';
+            document.getElementById('redirect-button').style.display = 'block';
+        } else {
+            document.getElementById('download-link').innerText = "No report available.";
+        }
+
+        // Redirect button event
+        document.getElementById('redirect-button').addEventListener('click', () => {
+            window.location.href = '/awareness_info.html';
+        });
+    </script>
+</body>
+</html>
