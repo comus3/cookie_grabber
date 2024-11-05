@@ -22,79 +22,31 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # Redirige vers cette vue en cas de tentative d'accès non autorisé
 CORS(app)
+from datetime import datetime 
+  
+
+# Setting up the Flask app
+app = Flask(__name__)
+CORS(app)
+
+# Redis Cache Configuration
 cache = Cache(app, config={
     "CACHE_TYPE": "redis",
     "CACHE_REDIS_HOST": os.getenv("CACHE_REDIS_HOST", "localhost"),
     "CACHE_REDIS_PORT": int(os.getenv("CACHE_REDIS_PORT", 6379)),
 })
 
-# Configuration MongoDB
+# MongoDB Configuration
 mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 client = MongoClient(mongo_uri)
 db = client['cookie_awareness']
 users_collection = db['users']
 email_history_collection = db['email_history']  
 
-# Configuration de Flask-Mail
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
-app.config['MAIL_PORT'] = 587  
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('...')  #  email username
-app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password 
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
-
-
-mail = Mail(app)
-
-@app.route('/email', methods=['POST'])
-def send_email():
-    """
-    Handle the form submission to send an email.
-    """
-    # Extract the user ID and form data
-    user_id = request.form.get('user_id')
-    email = request.form.get('email')
-    
-    if not user_id or not email:
-        return jsonify({"error": "User ID and email are required"}), 400
-
-    try:
-       # send_mail(user_id, email)  
-        return send_from_directory('public', "awareness_info.html")
-    except Exception as e:
-        print(f"Error sending email: {e}")
-        return jsonify({"error": "Failed to send email"}), 500
 
 
 
-def send_mail(user_id, recipient_email):
-    """
-    Simulated email sending function.
-    This should connect to your email service and send an email.
-    """
-    try:
-        msg = Message(
-            subject="Your Requested Information",
-            recipients=[recipient_email],
-            body=f"Hello,\n\nThis is a message containing details for user ID: {user_id}.\n\nThank you!",
-        )
-        mail.send(msg)
-        print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
-        
-        # Log the email sent in the email history collection
-        email_history_collection.insert_one({
-            "user_id": user_id,
-            "recipient_email": recipient_email,
-            "sent_at": datetime.now(),
-            "subject": msg.subject,
-            "body": msg.body,
-        })
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        raise e
-
-
-# Charger les clés API
+# Load API keys
 def load_api_keys():
     try:
         with open(os.path.join('ressources', 'api.json'), 'r') as f:
@@ -106,7 +58,7 @@ def load_api_keys():
 
 api_key, who_is_api_key = load_api_keys()
 
-# Fonction utilitaire pour convertir ObjectId en chaîne de caractères
+# Utility function to convert Object to string
 def convert_objectid_to_str(doc):
     """
     Convert MongoDB ObjectId to string for easier JSON serialization.
@@ -179,7 +131,7 @@ def get_statistics():
     """
     try:
         user_count = users_collection.count_documents({})
-        times_of_visit = [user['timeOfVisit'] for user in users_collection.find({"timeOfVisit": {"$exists": True}})]
+        times_of_visit = [user['time of visit'] for user in users_collection.find({"time of visit": {"$exists": True}})]
         avg_time_of_visit = mean(times_of_visit) if times_of_visit else None
         locations = get_user_location_distribution()
         
@@ -197,12 +149,16 @@ def get_statistics():
 
 def get_user_location_distribution():
     """
-    Helper function to aggregate user locations from the database.
+    Helper function to aggregate user count per region from the database.
+    Returns a dictionary with regions as keys and user counts as values.
     """
     try:
+        # Group by region and count the users in each region
         locations = list(users_collection.aggregate([
-            {"$group": {"_id": "$location.country", "count": {"$sum": 1}}}
+            {"$group": {"_id": "$location.region", "count": {"$sum": 1}}}
         ]))
+        
+        # Convert to dictionary format with region as key and count as value
         locations_dict = {loc['_id']: loc['count'] for loc in locations if loc['_id']}
         return locations_dict
     except Exception as e:
@@ -239,7 +195,7 @@ def update_db():
     user = request.json
     ip_address = request.remote_addr
 
-    # Utilisation de la fonction mise en cache pour obtenir les informations IP
+    # Using the cache function to get IP information
     ip_info = get_ip_info(ip_address)
 
     if not ip_info:  # Check if ip_info is None or empty
@@ -259,11 +215,11 @@ def update_db():
         }
     })
 
-    # Utilisation de la fonction mise en cache pour obtenir les données Whois
+    # Using the cache function to get Whois data
     whois_data = get_whois_data(ip_address)
     user["whoisData"] = whois_data
 
-    # Sauvegarder l'utilisateur dans la base de données MongoDB
+    # Save user to MongoDB database
     users_collection.insert_one(user)
     user = convert_objectid_to_str(user)
 
@@ -353,7 +309,7 @@ def get_email_history():
     """
     try:
         email_history = list(email_history_collection.find({}))
-        email_history = convert_objectid_to_str(email_history)  # Convertir ObjectId en chaîne pour la sérialisation JSON
+        email_history = convert_objectid_to_str(email_history)    # Convert Object Id to string for JSON serialization
         return jsonify(email_history), 200
     except Exception as e:
         print(f"Error fetching email history: {e}")
@@ -387,6 +343,31 @@ def delete_all_users():
     """
     users_collection.delete_many({})
     return jsonify({"status": "success", "message": "All users deleted"}), 200
+
+@app.route('/generate-file', methods=['POST'])
+def generate_file():
+    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)    # Get the user data from the request
+    data = request.json
+    user_id = data.get('userId')
+    user_data = data.get('userData')
+    
+    user_data['ipAddress'] = ip_address
+    user_data['WhoIs_Data'] = get_whois_data(ip_address)
+    user_data['ip_info'] = get_ip_info(ip_address)
+    
+
+    # Define a filename based on the user ID
+    file_name = f"user_data_report_{user_id}.json"
+    file_path = os.path.join("public/exports", file_name)
+
+    # Write the user data to the file
+    with open(file_path, 'w') as f:
+        json.dump(user_data, f, indent=4)
+
+    # Return the file name in the response
+    return jsonify({'fileName': file_name})
+
+
 
 @app.route('/update/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
@@ -457,18 +438,18 @@ def filter_users():
     max_time_of_visit = request.args.get('max_time_of_visit', type=int)
     exclude_whois_none = request.args.get('exclude_whois_none', default=False, type=bool)
     
-    # Construction du filtre MongoDB
+    # Building the MongoDB filter
     query_filter = {}
 
-    # Exclure les utilisateurs avec timeOfVisit > max_time_of_visit
+    # Exclude users with timeOfVisit > max_time_of_visit
     if max_time_of_visit is not None:
         query_filter['timeOfVisit'] = {"$lte": max_time_of_visit}
     
-    # Exclure les utilisateurs avec whois = None
+    # Exclude users with whois = None
     if exclude_whois_none:
         query_filter['whoisData'] = {"$ne": None}
 
-    # Effectuer la requête MongoDB avec les filtres spécifiés
+    # Perform the MongoDB query with the specified filters
     users = list(users_collection.find(query_filter))
     users = convert_objectid_to_str(users)
 
@@ -479,27 +460,115 @@ with app.app_context():
 
 @cache.memoize(timeout=300)
 def get_ip_info(ip_address):
-    """Récupère les informations IP en utilisant ipinfo.io et met en cache les résultats."""
+    """
+    Retrieves IP information using ipinfo.io and caches the results.
+    """
     ip_info_url = f'https://ipinfo.io/{ip_address}/json?token={api_key}'
     response = requests.get(ip_info_url)
     if response.status_code == 200:
         return response.json()
     else:
-        print("Erreur lors de l'obtention des informations IP.")
+        print("Error getting IP information.")
         return None
     
 
 @cache.memoize(timeout=300)
 def get_whois_data(ip_address):
-    """Récupère les données Whois et met en cache les résultats."""
+    """
+    Retrieves Whois data and caches the results.
+    """
     whois_url = f'https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey={who_is_api_key}&domainName={ip_address}&outputFormat=JSON'
     response = requests.get(whois_url)
     if response.status_code == 200:
         return response.json()
     else:
-        print("Erreur lors de l'obtention des données Whois.")
+        print("Error getting WHOIS data.")
         return None    
+      
+      
+    
+      
+      
+      
+      
+      
+      
+      
+################################################ OLD MAIL
 
-# Lancer l'application
+
+# Configuration de Flask-Mail
+# app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
+# app.config['MAIL_PORT'] = 587  
+# app.config['MAIL_USE_TLS'] = True
+# app.config['MAIL_USERNAME'] = os.environ.get('...')  #  email username
+# app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password 
+# app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
+
+
+#mail = Mail(app)
+
+# @app.route('/email', methods=['POST'])
+# def send_email():
+#     """
+#     Handle the form submission to send an email.
+#     """
+#     # Extract the user ID and form data
+#     user_id = request.form.get('user_id')
+#     email = request.form.get('email')
+    
+#     if not user_id or not email:
+#         return jsonify({"error": "User ID and email are required"}), 400
+
+#     try:
+#        # send_mail(user_id, email)  
+#         return send_from_directory('public', "awareness_info.html")
+#     except Exception as e:
+#         print(f"Error sending email: {e}")
+#         return jsonify({"error": "Failed to send email"}), 500
+    
+    
+# @app.route('/email', methods=['POST'])
+# def send_email():
+#     return send_from_directory('public', "awareness_info.html")
+    
+
+
+# def send_mail(user_id, recipient_email):
+#     """
+#     Simulated email sending function.
+#     This should connect to your email service and send an email.
+#     """
+#     try:
+#         msg = Message(
+#             subject="Your Requested Information",
+#             recipients=[recipient_email],
+#             body=f"Hello,\n\nThis is a message containing details for user ID: {user_id}.\n\nThank you!",
+#         )
+#         mail.send(msg)
+#         print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
+        
+#         # Log the email sent in the email history collection
+#         email_history_collection.insert_one({
+#             "user_id": user_id,
+#             "recipient_email": recipient_email,
+#             "sent_at": datetime.now(),
+#             "subject": msg.subject,
+#             "body": msg.body,
+#         })
+#     except Exception as e:
+#         print(f"Failed to send email: {e}")
+#         raise e
+
+######################################################################################################################
+      
+      
+      
+   
+      
+      
+      
+
+# lunch application
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)
