@@ -277,6 +277,9 @@ def generate_file():
     data = request.json
     user_id = data.get('userId')
     user_data = data.get('userData')
+    
+    user_data.WhoisData = get_whois_data(user_data.ipAddress)
+    user_data.ipInfo = get_ip_info(user_data.ipAddress)
 
     # Define a filename based on the user ID
     file_name = f"user_data_report_{user_id}.json"
