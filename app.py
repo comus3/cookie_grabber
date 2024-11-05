@@ -8,24 +8,24 @@ import requests
 import csv
 from statistics import mean
 from flask_caching import Cache
-from datetime import datetime  # Ajoutez cette ligne
+from datetime import datetime 
   
 
 app = Flask(__name__)
 CORS(app)
 
-# Configuration de l'application Flask
+# Setting up the Flask app
 app = Flask(__name__)
 CORS(app)
 
-# Configuration du cache Redis
+# Redis Cache Configuration
 cache = Cache(app, config={
     "CACHE_TYPE": "redis",
     "CACHE_REDIS_HOST": os.getenv("CACHE_REDIS_HOST", "localhost"),
     "CACHE_REDIS_PORT": int(os.getenv("CACHE_REDIS_PORT", 6379)),
 })
 
-# Configuration MongoDB
+# MongoDB Configuration
 mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 client = MongoClient(mongo_uri)
 db = client['cookie_awareness']
@@ -34,7 +34,7 @@ email_history_collection = db['email_history']
 
 
 
-# Charger les clés API
+# Load API keys
 def load_api_keys():
     try:
         with open(os.path.join('ressources', 'api.json'), 'r') as f:
@@ -46,7 +46,7 @@ def load_api_keys():
 
 api_key, who_is_api_key = load_api_keys()
 
-# Fonction utilitaire pour convertir ObjectId en chaîne de caractères
+# Utility function to convert Object to string
 def convert_objectid_to_str(doc):
     """
     Convert MongoDB ObjectId to string for easier JSON serialization.
@@ -131,7 +131,7 @@ def update_db():
     user = request.json
     ip_address = request.remote_addr
 
-    # Utilisation de la fonction mise en cache pour obtenir les informations IP
+    # Using the cache function to get IP information
     ip_info = get_ip_info(ip_address)
 
     user.update({
@@ -146,11 +146,11 @@ def update_db():
         }
     })
 
-    # Utilisation de la fonction mise en cache pour obtenir les données Whois
+    # Using the cache function to get Whois data
     whois_data = get_whois_data(ip_address)
     user["whoisData"] = whois_data
 
-    # Sauvegarder l'utilisateur dans la base de données MongoDB
+    # Save user to MongoDB database
     users_collection.insert_one(user)
     user = convert_objectid_to_str(user)
 
@@ -231,7 +231,7 @@ def get_email_history():
     """
     try:
         email_history = list(email_history_collection.find({}))
-        email_history = convert_objectid_to_str(email_history)  # Convertir ObjectId en chaîne pour la sérialisation JSON
+        email_history = convert_objectid_to_str(email_history)    # Convert Object Id to string for JSON serialization
         return jsonify(email_history), 200
     except Exception as e:
         print(f"Error fetching email history: {e}")
@@ -335,18 +335,18 @@ def filter_users():
     max_time_of_visit = request.args.get('max_time_of_visit', type=int)
     exclude_whois_none = request.args.get('exclude_whois_none', default=False, type=bool)
     
-    # Construction du filtre MongoDB
+    # Building the MongoDB filter
     query_filter = {}
 
-    # Exclure les utilisateurs avec timeOfVisit > max_time_of_visit
+    # Exclude users with timeOfVisit > max_time_of_visit
     if max_time_of_visit is not None:
         query_filter['timeOfVisit'] = {"$lte": max_time_of_visit}
     
-    # Exclure les utilisateurs avec whois = None
+    # Exclude users with whois = None
     if exclude_whois_none:
         query_filter['whoisData'] = {"$ne": None}
 
-    # Effectuer la requête MongoDB avec les filtres spécifiés
+    # Perform the MongoDB query with the specified filters
     users = list(users_collection.find(query_filter))
     users = convert_objectid_to_str(users)
 
@@ -355,27 +355,31 @@ def filter_users():
 
 @cache.memoize(timeout=300)
 def get_ip_info(ip_address):
-    """Récupère les informations IP en utilisant ipinfo.io et met en cache les résultats."""
+    """
+    Retrieves IP information using ipinfo.io and caches the results.
+    """
     ip_info_url = f'https://ipinfo.io/{ip_address}/json?token={api_key}'
     response = requests.get(ip_info_url)
     if response.status_code == 200:
         return response.json()
     else:
-        print("Erreur lors de l'obtention des informations IP.")
+        print("Error getting IP information.")
         return None
     
 
 @cache.memoize(timeout=300)
 def get_whois_data(ip_address):
-    """Récupère les données Whois et met en cache les résultats."""
+    """
+    Retrieves Whois data and caches the results.
+    """
     whois_url = f'https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey={who_is_api_key}&domainName={ip_address}&outputFormat=JSON'
     response = requests.get(whois_url)
     if response.status_code == 200:
         return response.json()
     else:
-        print("Erreur lors de l'obtention des données Whois.")
+        print("Error getting WHOIS data.")
         return None    
 
-# Lancer l'application
+# lunch application
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)
