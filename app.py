@@ -279,8 +279,8 @@ def generate_file():
     user_data = data.get('userData')
     
     user_data['ipAddress'] = ip_address
-    user_data['WhoIs_Data'] = get_whois_data(user_data.ipAddress)
-    user_data['ip_info'] = get_ip_info(user_data.ipAddress)
+    user_data['WhoIs_Data'] = get_whois_data(ip_address)
+    user_data['ip_info'] = get_ip_info(ip_address)
     
 
     # Define a filename based on the user ID
