@@ -243,44 +243,34 @@
             document.addEventListener('DOMContentLoaded', function () {
                 fetchStats();
             });
-
+        
             function fetchStats() {
-                // Fetch user count
-                fetch('/count-users')
+                // Fetch all statistics in one request
+                fetch('/stats')
                     .then(response => response.json())
                     .then(data => {
-                        document.getElementById('user-count').textContent = `Total Users: ${data.user_count}`;
-                    })
-                    .catch(error => {
-                        document.getElementById('user-count').textContent = 'Error loading user count';
-                        console.error('Error fetching user count:', error);
-                    });
-
-                // Fetch average time of visit
-                fetch('/average-time-of-visit')
-                    .then(response => response.json())
-                    .then(data => {
+                        // Affiche le nombre total d'utilisateurs
+                        document.getElementById('user-count').textContent = `Total Users: ${data.total_users || 'N/A'}`;
+                        
+                        // Affiche le temps moyen de visite
                         document.getElementById('average-time-of-visit').textContent = `Average Time of Visit: ${data.average_time_of_visit || 'N/A'} minutes`;
+                        
+                        // Affiche la distribution des utilisateurs par localisation
+                        const locations = data.users_by_location;
+                        const locationsString = locations
+                            ? Object.entries(locations).map(([loc, count]) => `${loc}: ${count}`).join(', ')
+                            : 'N/A';
+                        document.getElementById('location-distribution').textContent = `User Locations: ${locationsString}`;
                     })
                     .catch(error => {
+                        // Gérer les erreurs d'affichage
+                        document.getElementById('user-count').textContent = 'Error loading user count';
                         document.getElementById('average-time-of-visit').textContent = 'Error loading average time of visit';
-                        console.error('Error fetching average time of visit:', error);
-                    });
-
-                // Fetch location distribution
-                fetch('/location-distribution')
-                    .then(response => response.json())
-                    .then(data => {
-                        const locations = data.locations;
-                        const locationsString = Object.entries(locations).map(([loc, count]) => `${loc}: ${count}`).join(', ');
-                        document.getElementById('location-distribution').textContent = `User Locations: ${locationsString || 'N/A'}`;
-                    })
-                    .catch(error => {
                         document.getElementById('location-distribution').textContent = 'Error loading location distribution';
-                        console.error('Error fetching location distribution:', error);
+                        console.error('Error fetching statistics:', error);
                     });
             }
         </script>
-</body>
+        </body>
 
 </html>

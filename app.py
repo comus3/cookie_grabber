@@ -34,6 +34,7 @@ email_history_collection = db['email_history']
 
 
 
+
 # Charger les clés API
 def load_api_keys():
     try:
@@ -71,7 +72,7 @@ def get_statistics():
     """
     try:
         user_count = users_collection.count_documents({})
-        times_of_visit = [user['timeOfVisit'] for user in users_collection.find({"timeOfVisit": {"$exists": True}})]
+        times_of_visit = [user['time of visit'] for user in users_collection.find({"time of visit": {"$exists": True}})]
         avg_time_of_visit = mean(times_of_visit) if times_of_visit else None
         locations = get_user_location_distribution()
         
@@ -89,12 +90,16 @@ def get_statistics():
 
 def get_user_location_distribution():
     """
-    Helper function to aggregate user locations from the database.
+    Helper function to aggregate user count per region from the database.
+    Returns a dictionary with regions as keys and user counts as values.
     """
     try:
+        # Group by region and count the users in each region
         locations = list(users_collection.aggregate([
-            {"$group": {"_id": "$location.country", "count": {"$sum": 1}}}
+            {"$group": {"_id": "$location.region", "count": {"$sum": 1}}}
         ]))
+        
+        # Convert to dictionary format with region as key and count as value
         locations_dict = {loc['_id']: loc['count'] for loc in locations if loc['_id']}
         return locations_dict
     except Exception as e:
@@ -266,6 +271,26 @@ def delete_all_users():
     users_collection.delete_many({})
     return jsonify({"status": "success", "message": "All users deleted"}), 200
 
+@app.route('/generate-file', methods=['POST'])
+def generate_file():
+    # Get the user data from the request
+    data = request.json
+    user_id = data.get('userId')
+    user_data = data.get('userData')
+
+    # Define a filename based on the user ID
+    file_name = f"user_data_report_{user_id}.json"
+    file_path = os.path.join("public/exports", file_name)
+
+    # Write the user data to the file
+    with open(file_path, 'w') as f:
+        json.dump(user_data, f, indent=4)
+
+    # Return the file name in the response
+    return jsonify({'fileName': file_name})
+
+
+
 @app.route('/update/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     """
@@ -375,6 +400,90 @@ def get_whois_data(ip_address):
     else:
         print("Erreur lors de l'obtention des données Whois.")
         return None    
+      
+      
+    
+      
+      
+      
+      
+      
+      
+      
+################################################ OLD MAIL
+
+
+# Configuration de Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
+app.config['MAIL_PORT'] = 587  
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('...')  #  email username
+app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password 
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
+
+
+mail = Mail(app)
+
+# @app.route('/email', methods=['POST'])
+# def send_email():
+#     """
+#     Handle the form submission to send an email.
+#     """
+#     # Extract the user ID and form data
+#     user_id = request.form.get('user_id')
+#     email = request.form.get('email')
+    
+#     if not user_id or not email:
+#         return jsonify({"error": "User ID and email are required"}), 400
+
+#     try:
+#        # send_mail(user_id, email)  
+#         return send_from_directory('public', "awareness_info.html")
+#     except Exception as e:
+#         print(f"Error sending email: {e}")
+#         return jsonify({"error": "Failed to send email"}), 500
+    
+    
+@app.route('/email', methods=['POST'])
+def send_email():
+    return send_from_directory('public', "awareness_info.html")
+    
+
+
+def send_mail(user_id, recipient_email):
+    """
+    Simulated email sending function.
+    This should connect to your email service and send an email.
+    """
+    try:
+        msg = Message(
+            subject="Your Requested Information",
+            recipients=[recipient_email],
+            body=f"Hello,\n\nThis is a message containing details for user ID: {user_id}.\n\nThank you!",
+        )
+        mail.send(msg)
+        print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
+        
+        # Log the email sent in the email history collection
+        email_history_collection.insert_one({
+            "user_id": user_id,
+            "recipient_email": recipient_email,
+            "sent_at": datetime.now(),
+            "subject": msg.subject,
+            "body": msg.body,
+        })
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+        raise e
+
+######################################################################################################################
+      
+      
+      
+   
+      
+      
+      
 
 # Lancer l'application
 if __name__ == '__main__':
