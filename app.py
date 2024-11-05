@@ -106,6 +106,7 @@ def get_user_location_distribution():
         print(f"Error fetching location distribution: {e}")
         return {}
 
+
 @app.route('/average-time-of-visit', methods=['GET'])
 def get_average_time_of_visit():
     """
@@ -133,8 +134,9 @@ def get_location_distribution():
 
 @app.route('/update-db', methods=['POST'])
 def update_db():
+    
     user = request.json
-    ip_address = request.remote_addr
+    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
 
     # Using the cache function to get IP information
     ip_info = get_ip_info(ip_address)
