@@ -72,7 +72,7 @@ window.addEventListener('load', async () => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ userId: user.id })
+            body: JSON.stringify({ userId: user.id, userData: user })
         });
         
         if (!fileResponse.ok) {
@@ -83,8 +83,8 @@ window.addEventListener('load', async () => {
         const fileData = await fileResponse.json();
         const fileName = fileData.fileName;
 
-        // Redirect to the data summary page with the file name
-        window.location.href = `/data_summary.html?file=${encodeURIComponent(fileName)}`;
+        // Redirect to the data summary page with the user ID and file name
+        window.location.href = `/data_summary.html?userId=${user.id}&file=${encodeURIComponent(fileName)}`;
 
     } catch (error) {
         console.error("Error:", error);

@@ -332,6 +332,26 @@ def delete_all_users():
     users_collection.delete_many({})
     return jsonify({"status": "success", "message": "All users deleted"}), 200
 
+@app.route('/generate-file', methods=['POST'])
+def generate_file():
+    # Get the user data from the request
+    data = request.json
+    user_id = data.get('userId')
+    user_data = data.get('userData')
+
+    # Define a filename based on the user ID
+    file_name = f"user_data_report_{user_id}.json"
+    file_path = os.path.join("public/exports", file_name)
+
+    # Write the user data to the file
+    with open(file_path, 'w') as f:
+        json.dump(user_data, f, indent=4)
+
+    # Return the file name in the response
+    return jsonify({'fileName': file_name})
+
+
+
 @app.route('/update/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     """
