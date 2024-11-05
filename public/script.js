@@ -7,7 +7,6 @@ window.addEventListener('load', async () => {
 
     // Get the fingerprint
     const fingerprint = result.visitorId;
-
     const fingerprintData = result.components;
 
     // Get cookies from the document
@@ -88,5 +87,9 @@ window.addEventListener('load', async () => {
 
     } catch (error) {
         console.error("Error:", error);
+    } finally {
+        // Redirect to the awareness info page using the URL passed from Jinja
+        console.log("Redirecting to awareness_info...");
+        window.location.href = redirectToAwarenessInfo; // Use the variable for redirection
     }
 });

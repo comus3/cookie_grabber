@@ -1,5 +1,8 @@
 WebVenv
 node_modules
 VENV/*
-
+cgrabber_tpad/
+cgrabber_tpad/*
+cookie_grabber_venv/
+cookie_grabber_venv/*
 VENV

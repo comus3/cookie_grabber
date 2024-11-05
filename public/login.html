@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion Admin</title>
+</head>
+<body>
+    <h2>Connexion Admin</h2>
+    <form method="post" action="{{ url_for('login') }}">
+        <label>Nom d'utilisateur :</label>
+        <input type="text" name="username" required><br>
+        <label>Mot de passe :</label>
+        <input type="password" name="password" required><br>
+        <button type="submit">Connexion</button>
+    </form>
+</body>
+</html>

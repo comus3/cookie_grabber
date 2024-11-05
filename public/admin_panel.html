@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Admin Panel</title>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    <h2>Bienvenue sur la page d'administration, {{ user.username }} !</h2>
+    <a href="{{ url_for('logout') }}">Se déconnecter</a>
+
+    <!-- Section: Filter and Sort -->
+    <div id="controls">
+        <label>Sort by:</label>
+        <select id="sortField">
+            <option value="time of visit">Time of Visit</option>
+            <option value="id">ID</option>
+            <option value="ipAddress">IP address</option>
+        </select>
+        <select id="sortOrder">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+        </select>
+        <button onclick="sortUsers()">Sort</button>
+    </div>
+
+    <!-- Section: User List -->
+    <h2>User List</h2>
+    <div id="userList"></div>
+
+    <!-- Section: Statistics -->
+    <h2>Statistics</h2>
+    <div id="statistics"></div>
+
+    <script src="{{ url_for('static', filename='js/admin_script.js') }}"></script>
+    <!-- Modal for displaying detailed information -->
+    <div id="infoModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modalInfo"></div>
+        </div>
+    </div>
+
+    <!-- Section for displaying general info -->
+    <div id="infoDisplay"></div>
+
+    <style>
+        /* Basic styling for modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+
+</body>
+</html>
