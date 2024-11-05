@@ -61,7 +61,12 @@ def send_email():
     except Exception as e:
         print(f"Error sending email: {e}")
         return jsonify({"error": "Failed to send email"}), 500
-
+    
+    
+@app.route('/email', methods=['POST'])
+def send_email():
+    return send_from_directory('public', "awareness_info.html")
+    
 
 
 def send_mail(user_id, recipient_email):
