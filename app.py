@@ -426,7 +426,7 @@ app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
 
 
-mail = Mail(app)
+#mail = Mail(app)
 
 # @app.route('/email', methods=['POST'])
 # def send_email():
