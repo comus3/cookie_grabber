@@ -43,24 +43,24 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender ema
 
 mail = Mail(app)
 
-@app.route('/email', methods=['POST'])
-def send_email():
-    """
-    Handle the form submission to send an email.
-    """
-    # Extract the user ID and form data
-    user_id = request.form.get('user_id')
-    email = request.form.get('email')
+# @app.route('/email', methods=['POST'])
+# def send_email():
+#     """
+#     Handle the form submission to send an email.
+#     """
+#     # Extract the user ID and form data
+#     user_id = request.form.get('user_id')
+#     email = request.form.get('email')
     
-    if not user_id or not email:
-        return jsonify({"error": "User ID and email are required"}), 400
+#     if not user_id or not email:
+#         return jsonify({"error": "User ID and email are required"}), 400
 
-    try:
-       # send_mail(user_id, email)  
-        return send_from_directory('public', "awareness_info.html")
-    except Exception as e:
-        print(f"Error sending email: {e}")
-        return jsonify({"error": "Failed to send email"}), 500
+#     try:
+#        # send_mail(user_id, email)  
+#         return send_from_directory('public', "awareness_info.html")
+#     except Exception as e:
+#         print(f"Error sending email: {e}")
+#         return jsonify({"error": "Failed to send email"}), 500
     
     
 @app.route('/email', methods=['POST'])
