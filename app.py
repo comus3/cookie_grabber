@@ -130,7 +130,7 @@ def get_statistics():
     """
     try:
         user_count = users_collection.count_documents({})
-        times_of_visit = [user['timeOfVisit'] for user in users_collection.find({"timeOfVisit": {"$exists": True}})]
+        times_of_visit = [user['time of visit'] for user in users_collection.find({"time of visit": {"$exists": True}})]
         avg_time_of_visit = mean(times_of_visit) if times_of_visit else None
         locations = get_user_location_distribution()
         
@@ -148,12 +148,16 @@ def get_statistics():
 
 def get_user_location_distribution():
     """
-    Helper function to aggregate user locations from the database.
+    Helper function to aggregate user count per region from the database.
+    Returns a dictionary with regions as keys and user counts as values.
     """
     try:
+        # Group by region and count the users in each region
         locations = list(users_collection.aggregate([
-            {"$group": {"_id": "$location.country", "count": {"$sum": 1}}}
+            {"$group": {"_id": "$location.region", "count": {"$sum": 1}}}
         ]))
+        
+        # Convert to dictionary format with region as key and count as value
         locations_dict = {loc['_id']: loc['count'] for loc in locations if loc['_id']}
         return locations_dict
     except Exception as e:
