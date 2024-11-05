@@ -9,7 +9,7 @@ import csv
 from statistics import mean
 from flask_caching import Cache
 from datetime import datetime  # Ajoutez cette ligne
-from flask_mail import Mail, Message  
+  
 
 app = Flask(__name__)
 CORS(app)
@@ -32,63 +32,6 @@ db = client['cookie_awareness']
 users_collection = db['users']
 email_history_collection = db['email_history']  
 
-# Configuration de Flask-Mail
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
-app.config['MAIL_PORT'] = 587  
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('...')  #  email username
-app.config['MAIL_PASSWORD'] = os.environ.get('...')  # email password 
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('...')  #  default sender email
-
-
-mail = Mail(app)
-
-@app.route('/email', methods=['POST'])
-def send_email():
-    """
-    Handle the form submission to send an email.
-    """
-    # Extract the user ID and form data
-    user_id = request.form.get('user_id')
-    email = request.form.get('email')
-    
-    if not user_id or not email:
-        return jsonify({"error": "User ID and email are required"}), 400
-
-    try:
-       # send_mail(user_id, email)  
-        return send_from_directory('public', "awareness_info.html")
-    except Exception as e:
-        print(f"Error sending email: {e}")
-        return jsonify({"error": "Failed to send email"}), 500
-
-
-
-def send_mail(user_id, recipient_email):
-    """
-    Simulated email sending function.
-    This should connect to your email service and send an email.
-    """
-    try:
-        msg = Message(
-            subject="Your Requested Information",
-            recipients=[recipient_email],
-            body=f"Hello,\n\nThis is a message containing details for user ID: {user_id}.\n\nThank you!",
-        )
-        mail.send(msg)
-        print(f"Email successfully sent to {recipient_email} for user ID {user_id}")
-        
-        # Log the email sent in the email history collection
-        email_history_collection.insert_one({
-            "user_id": user_id,
-            "recipient_email": recipient_email,
-            "sent_at": datetime.now(),
-            "subject": msg.subject,
-            "body": msg.body,
-        })
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        raise e
 
 
 # Charger les clés API
