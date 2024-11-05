@@ -15,11 +15,8 @@ from werkzeug.security import check_password_hash
 from datetime import datetime  # Ajoutez cette ligne
 from flask_mail import Mail, Message  
 
-app = Flask(__name__)
-CORS(app)
-
 # Configuration de l'application Flask
-app = Flask(__name__)
+app = Flask(__name__, template_folder='public')
 app.secret_key = 'password'  # Clé secrète pour les sessions
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -125,7 +122,21 @@ def index():
     """
     Serve the main HTML page for the application.
     """
-    return send_from_directory('public', 'index.html')
+    return render_template('index.html')
+
+@app.route('/awareness_info')
+def awareness_info():
+    """
+    Serve the main HTML page for the application.
+    """
+    return render_template('awareness_info.html')
+
+@app.route('/email_info')
+def email_info():
+    """
+    Serve the main HTML page for the application.
+    """
+    return render_template('email_info.html')
 
 @app.route('/admin')
 @login_required
@@ -463,6 +474,8 @@ def filter_users():
 
     return jsonify(users), 200
 
+with app.app_context():
+    print(app.url_map)  # This will print all routes registered in the application
 
 @cache.memoize(timeout=300)
 def get_ip_info(ip_address):

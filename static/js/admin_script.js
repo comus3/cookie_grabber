@@ -29,7 +29,7 @@ function displayUsers(users) {
             <p><strong>Timezone:</strong> ${user.timezone}</p>
             <p><strong>Language:</strong> ${user.language}</p>
             <p><strong>Platform:</strong> ${user.platform}</p>
-            <p><strong>Platform
+            <p><strong>IP Address:</strong> ${user.ipAddress}</p>
             <button onclick="deleteUser('${user.id}')">Delete</button>
             <button onclick="showInfo('${user.id}')">Show User Info</button>
             <button onclick="showLocation('${user.id}')">Show Location</button>
