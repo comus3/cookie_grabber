@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Admin Panel</title>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    <h2>Bienvenue sur la page d'administration, {{ user.username }} !</h2>
+    <a href="{{ url_for('logout') }}">Se déconnecter</a>
+
+    <!-- Section: Filter and Sort -->
+    <div id="controls">
+        <label>Sort by:</label>
+        <select id="sortField">
+            <option value="timeOfVisit">Time of Visit</option>
+            <option value="name">Name</option>
+            <option value="email">Email</option>
+        </select>
+        <select id="sortOrder">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+        </select>
+        <button onclick="sortUsers()">Sort</button>
+
+        <label>Filter by Max Time of Visit:</label>
+        <input type="number" id="maxTimeVisit" placeholder="Enter max time">
+        <label>Exclude Users Without WHOIS Data</label>
+        <input type="checkbox" id="excludeWhoisNone">
+        <button onclick="filterUsers()">Filter</button>
+    </div>
+
+    <!-- Section: User List -->
+    <h2>User List</h2>
+    <div id="userList"></div>
+
+    <!-- Section: Statistics -->
+    <h2>Statistics</h2>
+    <div id="statistics"></div>
+
+    <script src="{{ url_for('static', filename='js/admin_script.js') }}"></script>
+</body>
+</html>
