@@ -1,7 +1,6 @@
-Flask
 flask-cors
 pymongo
 requests
 flask-caching
-flask-mail
 redis
+flask-login
